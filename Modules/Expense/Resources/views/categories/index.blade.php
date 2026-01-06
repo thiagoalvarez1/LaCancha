@@ -22,7 +22,8 @@
                 <div class="card">
                     <div class="card-body">
                         <!-- Button trigger modal -->
-                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#categoryCreateModal">
+                        <button type="button" class="btn btn-primary" data-toggle="modal"
+                            data-target="#categoryCreateModal">
                             Add Category <i class="bi bi-plus"></i>
                         </button>
 
@@ -38,7 +39,8 @@
     </div>
 
     <!-- Create Modal -->
-    <div class="modal fade" id="categoryCreateModal" tabindex="-1" role="dialog" aria-labelledby="categoryCreateModal" aria-hidden="true">
+    <div class="modal fade" id="categoryCreateModal" tabindex="-1" role="dialog" aria-labelledby="categoryCreateModal"
+        aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -56,7 +58,8 @@
                         </div>
                         <div class="form-group">
                             <label for="category_description">Description</label>
-                            <textarea class="form-control" name="category_description" id="category_description" rows="5"></textarea>
+                            <textarea class="form-control" name="category_description" id="category_description"
+                                rows="5"></textarea>
                         </div>
                     </div>
                     <div class="modal-footer">
