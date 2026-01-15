@@ -17,8 +17,8 @@ use Modules\Sale\Http\Requests\StorePosSaleRequest;
 
 class PosController extends Controller
 {
-
-    public function index() {
+    public function index()
+    {
         Cart::instance('sale')->destroy();
 
         $customers = Customer::all();
@@ -27,8 +27,33 @@ class PosController extends Controller
         return view('sale::pos.index', compact('product_categories', 'customers'));
     }
 
+    /**
+     * Determinar sede automáticamente según el usuario
+     */
+    private function getSedeUsuario()
+    {
+        $userId = auth()->id();
 
-    public function store(StorePosSaleRequest $request) {
+        // Mapeo directo por ID de usuario
+        $mapeoSedes = [
+            2 => 'BLINDEX',     // Usuario "Blindex" - SEDE BLINDEX
+            3 => 'LA CANCHA',   // Usuario "LaCancha" - SEDE LA CANCHA
+            4 => 'LA CANCHA',   // Usuario "Raul" - SEDE LA CANCHA
+            // El Super Admin (id: 1) no está en el mapeo porque no hace ventas
+        ];
+
+        // Si el usuario está mapeado, devolver su sede
+        if (array_key_exists($userId, $mapeoSedes)) {
+            return $mapeoSedes[$userId];
+        }
+
+        // Para cualquier usuario no mapeado (por si acaso)
+        // Default: LA CANCHA
+        return 'LA CANCHA';
+    }
+
+    public function store(StorePosSaleRequest $request)
+    {
         DB::transaction(function () use ($request) {
             $due_amount = $request->total_amount - $request->paid_amount;
 
@@ -54,7 +79,9 @@ class PosController extends Controller
                 'status' => 'Completed',
                 'payment_status' => $payment_status,
                 'payment_method' => $request->payment_method,
-                'note' => $request->note,
+                // === CAMBIO AQUÍ: Agregar sede automáticamente ===
+                'note' => 'SEDE: ' . $this->getSedeUsuario() . ' | ' . ($request->note ?? ''),
+                // =================================================
                 'tax_amount' => Cart::instance('sale')->tax() * 100,
                 'discount_amount' => Cart::instance('sale')->discount() * 100,
             ]);
@@ -85,7 +112,7 @@ class PosController extends Controller
             if ($sale->paid_amount > 0) {
                 SalePayment::create([
                     'date' => now()->format('Y-m-d'),
-                    'reference' => 'INV/'.$sale->reference,
+                    'reference' => 'INV/' . $sale->reference,
                     'amount' => $sale->paid_amount,
                     'sale_id' => $sale->id,
                     'payment_method' => $request->payment_method

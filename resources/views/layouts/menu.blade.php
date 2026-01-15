@@ -140,7 +140,8 @@
             <li class="c-sidebar-nav-item">
                 <a class="c-sidebar-nav-link {{ request()->routeIs('purchase-returns.index') ? 'c-active' : '' }}"
                     href="{{ route('purchase-returns.index') }}">
-                    <i class="c-sidebar-nav-icon bi bi-journals" style="line-height: 1;"></i> Todas las Devoluciones de Compra
+                    <i class="c-sidebar-nav-icon bi bi-journals" style="line-height: 1;"></i> Todas las Devoluciones de
+                    Compra
                 </a>
             </li>
         </ul>
@@ -194,7 +195,8 @@
             <li class="c-sidebar-nav-item">
                 <a class="c-sidebar-nav-link {{ request()->routeIs('sale-returns.index') ? 'c-active' : '' }}"
                     href="{{ route('sale-returns.index') }}">
-                    <i class="c-sidebar-nav-icon bi bi-journals" style="line-height: 1;"></i> Todas las Devoluciones de Venta
+                    <i class="c-sidebar-nav-icon bi bi-journals" style="line-height: 1;"></i> Todas las Devoluciones de
+                    Venta
                 </a>
             </li>
         </ul>
@@ -270,7 +272,8 @@
             <li class="c-sidebar-nav-item">
                 <a class="c-sidebar-nav-link {{ request()->routeIs('profit-loss-report.index') ? 'c-active' : '' }}"
                     href="{{ route('profit-loss-report.index') }}">
-                    <i class="c-sidebar-nav-icon bi bi-clipboard-data" style="line-height: 1;"></i> Reporte de Ganancia/Pérdida
+                    <i class="c-sidebar-nav-icon bi bi-clipboard-data" style="line-height: 1;"></i> Reporte de
+                    Ganancia/Pérdida
                 </a>
             </li>
             <li class="c-sidebar-nav-item">
@@ -285,6 +288,14 @@
                     <i class="c-sidebar-nav-icon bi bi-clipboard-data" style="line-height: 1;"></i> Reporte de Ventas
                 </a>
             </li>
+            <!-- AGREGAR AQUÍ EL NUEVO REPORTE -->
+            <li class="c-sidebar-nav-item">
+                <a class="c-sidebar-nav-link {{ request()->routeIs('reports.sales-by-branch') ? 'c-active' : '' }}"
+                    href="{{ route('reports.sales-by-branch') }}">
+                    <i class="c-sidebar-nav-icon bi bi-shop" style="line-height: 1;"></i> Ventas por Sede
+                </a>
+            </li>
+            <!-- FIN DEL NUEVO REPORTE -->
             <li class="c-sidebar-nav-item">
                 <a class="c-sidebar-nav-link {{ request()->routeIs('purchases-report.index') ? 'c-active' : '' }}"
                     href="{{ route('purchases-report.index') }}">
@@ -294,13 +305,15 @@
             <li class="c-sidebar-nav-item">
                 <a class="c-sidebar-nav-link {{ request()->routeIs('sales-return-report.index') ? 'c-active' : '' }}"
                     href="{{ route('sales-return-report.index') }}">
-                    <i class="c-sidebar-nav-icon bi bi-clipboard-data" style="line-height: 1;"></i> Reporte de Devoluciones de Venta
+                    <i class="c-sidebar-nav-icon bi bi-clipboard-data" style="line-height: 1;"></i> Reporte de Devoluciones
+                    de Venta
                 </a>
             </li>
             <li class="c-sidebar-nav-item">
                 <a class="c-sidebar-nav-link {{ request()->routeIs('purchases-return-report.index') ? 'c-active' : '' }}"
                     href="{{ route('purchases-return-report.index') }}">
-                    <i class="c-sidebar-nav-icon bi bi-clipboard-data" style="line-height: 1;"></i> Reporte de Devoluciones de Compra
+                    <i class="c-sidebar-nav-icon bi bi-clipboard-data" style="line-height: 1;"></i> Reporte de Devoluciones
+                    de Compra
                 </a>
             </li>
         </ul>
