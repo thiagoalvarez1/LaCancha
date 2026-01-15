@@ -13,58 +13,103 @@ use Modules\Sale\Entities\Sale;
 use Modules\Sale\Entities\SalePayment;
 use Modules\SalesReturn\Entities\SaleReturn;
 use Modules\SalesReturn\Entities\SaleReturnPayment;
+use Illuminate\Http\Request; // Importante
 
 class HomeController extends Controller
 {
+    public function index()
+    {
+        // Capturamos el filtro si existe
+        $emailFiltro = request('sucursal_email');
 
-    public function index() {
-        $sales = Sale::completed()->sum('total_amount');
-        $sale_returns = SaleReturn::completed()->sum('total_amount');
-        $purchase_returns = PurchaseReturn::completed()->sum('total_amount');
+        // Consultas base con filtro condicional
+        $salesQuery = Sale::completed();
+        $saleReturnsQuery = SaleReturn::completed();
+        $purchaseReturnsQuery = PurchaseReturn::completed();
+
+        if ($emailFiltro) {
+            $salesQuery->where('reference', 'LIKE', '%' . $emailFiltro . '%');
+            $saleReturnsQuery->where('reference', 'LIKE', '%' . $emailFiltro . '%');
+            // Nota: Si las compras no tienen referencia por sucursal, no se filtrarán
+        }
+
+        $sales = $salesQuery->sum('total_amount');
+        $sale_returns = $saleReturnsQuery->sum('total_amount');
+        $purchase_returns = $purchaseReturnsQuery->sum('total_amount');
+
         $product_costs = 0;
-
-        foreach (Sale::completed()->with('saleDetails')->get() as $sale) {
+        foreach ($salesQuery->with('saleDetails.product')->get() as $sale) {
             foreach ($sale->saleDetails as $saleDetail) {
                 if (!is_null($saleDetail->product)) {
-                    $product_costs += $saleDetail->product->product_cost * $saleDetail->quantity;
+                    $product_costs += ($saleDetail->product->product_cost * $saleDetail->quantity);
                 }
             }
         }
 
         $revenue = ($sales - $sale_returns) / 100;
-        $profit = $revenue - $product_costs;
+        $profit = $revenue - ($product_costs / 100);
+
+        // 1. Clientes con deuda (filtrado)
+        $top_deudores_query = Sale::where('due_amount', '>', 0);
+        if ($emailFiltro) {
+            $top_deudores_query->where('reference', 'LIKE', '%' . $emailFiltro . '%');
+        }
+        $top_deudores = $top_deudores_query->select('customer_name', DB::raw('SUM(due_amount) as due_amount'))
+            ->groupBy('customer_name')->orderByDesc('due_amount')->limit(5)->get();
+
+        // 2. Productos más vendidos (filtrado)
+        $top_productos_query = DB::table('sale_details')
+            ->join('sales', 'sale_details.sale_id', '=', 'sales.id')
+            ->where('sales.status', 'Completed');
+        if ($emailFiltro) {
+            $top_productos_query->where('sales.reference', 'LIKE', '%' . $emailFiltro . '%');
+        }
+        $top_productos = $top_productos_query->select('product_name', DB::raw('SUM(quantity) as total_qty'))
+            ->groupBy('product_name')->orderByDesc('total_qty')->limit(5)->get();
+
+        // 3. Actividad Reciente (filtrado)
+        $recent_query = Sale::latest();
+        if ($emailFiltro) {
+            $recent_query->where('reference', 'LIKE', '%' . $emailFiltro . '%');
+        }
+        $recent_activities = $recent_query->limit(5)->get();
 
         return view('home', [
-            'revenue'          => $revenue,
-            'sale_returns'     => $sale_returns / 100,
+            'revenue' => $revenue,
+            'sale_returns' => $sale_returns / 100,
             'purchase_returns' => $purchase_returns / 100,
-            'profit'           => $profit
+            'profit' => $profit,
+            'top_deudores' => $top_deudores,
+            'top_productos' => $top_productos,
+            'recent_activities' => $recent_activities
         ]);
     }
 
-
-    public function currentMonthChart() {
+    public function currentMonthChart()
+    {
         abort_if(!request()->ajax(), 404);
+        $emailFiltro = request('sucursal_email');
 
-        $currentMonthSales = Sale::where('status', 'Completed')->whereMonth('date', date('m'))
-                ->whereYear('date', date('Y'))
-                ->sum('total_amount') / 100;
-        $currentMonthPurchases = Purchase::where('status', 'Completed')->whereMonth('date', date('m'))
-                ->whereYear('date', date('Y'))
-                ->sum('total_amount') / 100;
-        $currentMonthExpenses = Expense::whereMonth('date', date('m'))
-                ->whereYear('date', date('Y'))
-                ->sum('amount') / 100;
+        $salesQuery = Sale::where('status', 'Completed')->whereMonth('date', date('m'))->whereYear('date', date('Y'));
+        $purchasesQuery = Purchase::where('status', 'Completed')->whereMonth('date', date('m'))->whereYear('date', date('Y'));
+
+        if ($emailFiltro) {
+            $salesQuery->where('reference', 'LIKE', '%' . $emailFiltro . '%');
+            // Si las compras también llevan referencia: $purchasesQuery->where('reference', 'LIKE', '%' . $emailFiltro . '%');
+        }
 
         return response()->json([
-            'sales'     => $currentMonthSales,
-            'purchases' => $currentMonthPurchases,
-            'expenses'  => $currentMonthExpenses
+            'sales' => $salesQuery->sum('total_amount') / 100,
+            'purchases' => $purchasesQuery->sum('total_amount') / 100,
+            'expenses' => Expense::whereMonth('date', date('m'))->whereYear('date', date('Y'))->sum('amount') / 100
         ]);
     }
 
 
-    public function salesPurchasesChart() {
+
+
+    public function salesPurchasesChart()
+    {
         abort_if(!request()->ajax(), 404);
 
         $sales = $this->salesChartData();
@@ -74,7 +119,8 @@ class HomeController extends Controller
     }
 
 
-    public function paymentChart() {
+    public function paymentChart()
+    {
         abort_if(!request()->ajax(), 404);
 
         $dates = collect();
@@ -151,7 +197,8 @@ class HomeController extends Controller
         ]);
     }
 
-    public function salesChartData() {
+    public function salesChartData()
+    {
         $dates = collect();
         foreach (range(-6, 0) as $i) {
             $date = Carbon::now()->addDays($i)->format('d-m-y');
@@ -183,7 +230,8 @@ class HomeController extends Controller
     }
 
 
-    public function purchasesChartData() {
+    public function purchasesChartData()
+    {
         $dates = collect();
         foreach (range(-6, 0) as $i) {
             $date = Carbon::now()->addDays($i)->format('d-m-y');
