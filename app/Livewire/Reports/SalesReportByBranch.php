@@ -18,7 +18,7 @@ class SalesReportByBranch extends Component
     public $customer_id;
     public $sale_status;
     public $payment_status;
-    public $sede; // <- NUEVA PROPIEDAD
+    public $sede;
 
     protected $rules = [
         'start_date' => 'required|date|before:end_date',
@@ -33,10 +33,9 @@ class SalesReportByBranch extends Component
         $this->customer_id = '';
         $this->sale_status = '';
         $this->payment_status = '';
-        $this->sede = 'todas'; // <- Valor por defecto
+        $this->sede = 'todas';
     }
 
-    // En lugar de dividir por 100, formatear correctamente
     public function render()
     {
         $sales = Sale::whereDate('date', '>=', $this->start_date)
@@ -70,4 +69,24 @@ class SalesReportByBranch extends Component
         $this->validate();
         $this->render();
     }
+
+    // === MÉTODO NUEVO PARA LIMPIAR FILTROS ===
+    public function clearFilters()
+    {
+        $this->reset([
+            'start_date',
+            'end_date',
+            'customer_id',
+            'sale_status',
+            'payment_status',
+            'sede'
+        ]);
+
+        // Restaurar fechas por defecto (últimos 30 días)
+        $this->start_date = today()->subDays(30)->format('Y-m-d');
+        $this->end_date = today()->format('Y-m-d');
+
+        $this->render();
+    }
+    // =========================================
 }

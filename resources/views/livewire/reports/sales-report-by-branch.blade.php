@@ -34,9 +34,14 @@
                     </select>
                 </div>
                 <div class="col-lg-2 col-md-4 align-self-end">
-                    <button wire:click="generateReport" class="btn btn-primary">
-                        <i class="bi bi-filter"></i> Filtrar
-                    </button>
+                    <div class="d-flex gap-2">
+                        <button wire:click="generateReport" class="btn btn-primary">
+                            <i class="bi bi-filter"></i> Filtrar
+                        </button>
+                        <button wire:click="clearFilters" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Limpiar
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -76,54 +81,57 @@
                     </div>
                 </div>
             </div>
+
             <!-- Tabla de Ventas -->
-           <!-- Tabla de Ventas -->
-<div class="table-responsive">
-    <table class="table table-bordered table-striped">
-        <thead>
-            <tr>
-                <th>Fecha</th>
-                <th>Referencia</th>
-                <th>Cliente</th>
-                <th>Estado</th>
-                <th>Total</th>
-                <th>Pagado</th>
-                <th>Pendiente</th>
-                <th>Estado Pago</th>
-                <th>Método Pago</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($sales as $sale)
-            <tr>
-                <td>{{ $sale->date }}</td>
-                <td>
-                    <span class="badge {{ str_starts_with($sale->reference, 'LC-') ? 'bg-info' : 'bg-warning' }}">
-                        {{ $sale->reference }}
-                    </span>
-                </td>
-                <td>{{ $sale->customer_name }}</td>
-                <td><span class="badge bg-success">{{ $sale->status }}</span></td>
-                <td>{{ format_currency($sale->total_amount) }}</td>
-                <td>{{ format_currency($sale->paid_amount) }}</td>
-                <td>
-                    @if($sale->due_amount > 0)
-                    <span class="badge bg-danger">{{ format_currency($sale->due_amount) }}</span>
-                    @else
-                    <span class="badge bg-success">{{ format_currency(0) }}</span>
-                    @endif
-                </td>
-                <td><span class="badge bg-{{ $sale->payment_status == 'Paid' ? 'success' : 'warning' }}">{{ $sale->payment_status }}</span></td>
-                <td>{{ $sale->payment_method }}</td>
-            </tr>
-            @empty
-            <tr>
-                <td colspan="9" class="text-center">No hay ventas para los filtros seleccionados.</td>
-            </tr>
-            @endforelse
-        </tbody>
-    </table>
-</div>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Referencia</th>
+                            <th>Cliente</th>
+                            <th>Estado</th>
+                            <th>Total</th>
+                            <th>Pagado</th>
+                            <th>Pendiente</th>
+                            <th>Estado Pago</th>
+                            <th>Método Pago</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($sales as $sale)
+                            <tr>
+                                <td>{{ $sale->date }}</td>
+                                <td>
+                                    <span
+                                        class="badge {{ str_starts_with($sale->reference, 'LC-') ? 'bg-info' : 'bg-warning' }}">
+                                        {{ $sale->reference }}
+                                    </span>
+                                </td>
+                                <td>{{ $sale->customer_name }}</td>
+                                <td><span class="badge bg-success">{{ $sale->status }}</span></td>
+                                <td>{{ format_currency($sale->total_amount) }}</td>
+                                <td>{{ format_currency($sale->paid_amount) }}</td>
+                                <td>
+                                    @if($sale->due_amount > 0)
+                                        <span class="badge bg-danger">{{ format_currency($sale->due_amount) }}</span>
+                                    @else
+                                        <span class="badge bg-success">{{ format_currency(0) }}</span>
+                                    @endif
+                                </td>
+                                <td><span
+                                        class="badge bg-{{ $sale->payment_status == 'Paid' ? 'success' : 'warning' }}">{{ $sale->payment_status }}</span>
+                                </td>
+                                <td>{{ $sale->payment_method }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="9" class="text-center">No hay ventas para los filtros seleccionados.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
 
             <!-- Paginación -->
             <div class="mt-3">
